@@ -1,0 +1,30 @@
+from odoo import models
+
+class EstateProperty(models.Model):
+    _inherit = "estate.property"
+
+    def action_sold(self):
+        print("estate_account override working!")
+        
+        res = super().action_sold()
+
+        move = self.env["account.move"].create({
+            "partner_id": self.buyer_id.id,
+            "move_type": "out_invoice", 
+            "invoice_line_ids": [
+                Command.create({
+                    "name": "6% Sales Commission",
+                    "quantity": 1,
+                    "price_unit": self.selling_price * 0.06,
+                }),
+                Command.create({
+                    "name": "Administrative Fees",
+                    "quantity": 1,
+                    "price_unit": 100.00,
+                }),
+            ],
+        })
+
+        print(f" Invoice {move.name} created for property {self.name}")
+
+        return res
